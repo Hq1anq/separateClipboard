@@ -11,6 +11,7 @@ StatusWindow::StatusWindow(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
     setAttribute(Qt::WA_TranslucentBackground);
+
     moveToBottomRight();
 }
 
@@ -22,6 +23,7 @@ StatusWindow::~StatusWindow()
 void StatusWindow::setParts(const QStringList &parts)
 {
     partList = parts;
+    updateStatus(0);
 }
 
 void StatusWindow::updateStatus(int currentIndex)
@@ -29,7 +31,17 @@ void StatusWindow::updateStatus(int currentIndex)
     if (currentIndex < partList.size()) {
         int remaining = partList.size() - currentIndex - 1;
         ui->count->setText(QString("Remaining: %1").arg(remaining));
-        ui->next->setText("Next: " + partList[currentIndex]);
+
+        // Split the string by ":" and take the first part
+        QString fullPart = partList[currentIndex];
+        QString preview = fullPart.split(":").first();
+
+        // Truncate if longer than 15 characters
+        if (preview.length() > 15) {
+            preview = preview.left(15) + "...";
+        }
+
+        ui->next->setText("Next: " + preview);
     }
 }
 

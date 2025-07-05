@@ -109,6 +109,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     g_mainWindow = this;
 
+    setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+
     connect(ui->delimiter, &QLineEdit::returnPressed, this, &MainWindow::processDelimiter);
 }
 
@@ -120,10 +123,16 @@ MainWindow::~MainWindow()
 void MainWindow::processDelimiter()
 {
     QString delimiterText = ui->delimiter->text();
-    if (delimiterText.isEmpty()) return;
+    if (delimiterText.isEmpty()) {
+        this->close();
+        return;
+    }
 
     std::string clipboardContent = GetClipboardText();
-    if (clipboardContent.empty()) return;
+    if (clipboardContent.empty()) {
+        this->close();
+        return;
+    }
 
     // Handle \n input as newline
     char delimiterChar;
@@ -157,4 +166,5 @@ void MainWindow::processDelimiter()
         StartHookThread();
     });
     hookThread->start();
+    this->hide();
 }

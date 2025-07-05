@@ -7,22 +7,45 @@
     <x>0</x>
     <y>0</y>
     <width>257</width>
-    <height>149</height>
+    <height>117</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+            background-color: rgba(255, 255, 255, 220);
+            border-radius: 15px;
+        }</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">background-color: rgb(255, 255, 255);</string>
+    <string notr="true">QWidget {
+    background-color: #004643;
+    border-radius: 10px;
+}
+
+QLabel {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+QLabel#count {
+    color: #abd1c6;
+}
+
+QLabel#next {
+    color: #fffffe;;
+}</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QLabel" name="count">
       <property name="font">
        <font>
-        <pointsize>20</pointsize>
+        <pointsize>-1</pointsize>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -37,11 +60,12 @@
      <widget class="QLabel" name="next">
       <property name="font">
        <font>
-        <pointsize>20</pointsize>
+        <pointsize>-1</pointsize>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
-       <string>next</string>
+       <string>Next</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
