@@ -153,9 +153,12 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    g_mainWindow = this;
+    g_mainWindow = this;    
 
     ui->addNewLine->raise();
+
+    // 👇 Auto-focus the delimiter input field
+    ui->delimiter->setFocus();
 
     setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint);
     setAttribute(Qt::WA_TranslucentBackground);
