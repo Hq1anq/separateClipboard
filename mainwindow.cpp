@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QMetaObject>
 #include <QStringList>
+#include <QKeyEvent>
 #include <windows.h>
 #include <string>
 #include <vector>
@@ -56,9 +57,43 @@ std::vector<std::string> SplitInput(const std::string& input, char delimiter) {
     return result;
 }
 
+std::string CleanPart(const std::string& input, bool addNewline)
+{
+    // Only trim newline characters (not spaces or tabs)
+    size_t start = 0;
+    while (start < input.size() && (input[start] == '\n' || input[start] == '\r'))
+        ++start;
+
+    size_t end = input.size();
+    while (end > start && (input[end - 1] == '\n' || input[end - 1] == '\r'))
+        --end;
+
+    std::string trimmed = input.substr(start, end - start);
+
+    // Skip if trimmed is empty
+    if (trimmed.empty())
+        return "";
+
+    if (addNewline) {
+        trimmed += "\n";
+    }
+
+    return trimmed;
+}
+
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0 && wParam == WM_KEYDOWN) {
         KBDLLHOOKSTRUCT* pKey = (KBDLLHOOKSTRUCT*)lParam;
+
+        // 🔐 ESC = immediate exit
+        if (pKey->vkCode == VK_ESCAPE) {
+            qDebug() << "ESC detected. Quitting...";
+            QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+            if (g_statusWindow)
+                QMetaObject::invokeMethod(g_statusWindow, "close", Qt::QueuedConnection);
+            PostQuitMessage(0);
+            return 1;
+        }
 
         if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) && pKey->vkCode == 'V') {
             if (!parts.empty() && currentIndex < parts.size()) {
@@ -102,12 +137,25 @@ void StartHookThread() {
     UnhookWindowsHookEx(keyboardHook);
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape) {
+        qDebug() << "ESC pressed. Closing MainWindow.";
+        this->close();          // ✅ Closes MainWindow
+        // or: QApplication::quit(); // if you want to quit entire app
+    } else {
+        QMainWindow::keyPressEvent(event); // pass to base class
+    }
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     g_mainWindow = this;
+
+    ui->addNewLine->raise();
 
     setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint);
     setAttribute(Qt::WA_TranslucentBackground);
@@ -140,11 +188,12 @@ void MainWindow::processDelimiter()
         delimiterChar = '\n';
     else delimiterChar = delimiterText.toStdString()[0];
 
-    std::vector<std::string> vecParts = SplitInput(clipboardContent, delimiterChar);
-    if (vecParts.empty()) return;
+    bool addNewline = ui->addNewLine->isChecked();
+    std::vector<std::string> rawParts = SplitInput(clipboardContent, delimiterChar);
+    if (rawParts.empty()) return;
 
     QStringList parts;
-    for (const auto& part : vecParts)
+    for (const auto& part : rawParts)
         parts << QString::fromStdString(part);
 
     // Create and show StatusWindow
@@ -158,7 +207,12 @@ void MainWindow::processDelimiter()
 
     // Set up global clipboard cycling state
     ::parts.clear();
-    for (const auto& part : vecParts) ::parts.push_back(part);
+    for (const auto& raw : rawParts) {
+        std::string cleaned = CleanPart(raw, addNewline);
+        if (!cleaned.empty()) {
+            ::parts.push_back(cleaned);
+        }
+    }
     currentIndex = 0;
     SetClipboardText(::parts[0]);
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>271</width>
-    <height>124</height>
+    <height>96</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,26 +33,69 @@ QLineEdit {
     padding: 10px;
     font-size: 35px;
 	font-weight: bold;
-}</string>
+}
+
+QCheckBox {
+    color: #fffffe;
+}
+
+QCheckBox::indicator {
+    border: 3px solid #006a63;
+	width: 15px;
+	height: 15px;
+	border-radius: 10px;
+    background: #004643 }
+QCheckBox::indicator:hover { border: 3px solid #004f4a }
+QCheckBox::indicator:checked {
+    background: 3px solid #004f4a;
+	border: 3px solid #004f4a;
+	background-image: url(:/icon/check.svg) }</string>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>delimiter:</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="delimiter"/>
-    </item>
-   </layout>
+   <widget class="QCheckBox" name="addNewLine">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>68</y>
+      <width>82</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add \n</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>11</y>
+      <width>251</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>-1</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>delimiter:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="delimiter">
+       <property name="text">
+        <string>\n</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
  </widget>
  <resources/>
