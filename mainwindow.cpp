@@ -22,12 +22,14 @@ StatusWindow* g_statusWindow = nullptr;
 
 std::string GetClipboardText() {
     std::string result;
-    if (OpenClipboard(NULL)) {
-        HANDLE hData = GetClipboardData(CF_TEXT);
+    if (OpenClipboard(nullptr)) {
+        HANDLE hData = GetClipboardData(CF_UNICODETEXT);
         if (hData) {
-            char* pszText = static_cast<char*>(GlobalLock(hData));
+            wchar_t* pszText = static_cast<wchar_t*>(GlobalLock(hData));
             if (pszText) {
-                result = pszText;
+                // Convert wide Unicode to UTF-8
+                QString qstr = QString::fromWCharArray(pszText);
+                result = qstr.toUtf8().toStdString();
                 GlobalUnlock(hData);
             }
         }
@@ -37,14 +39,22 @@ std::string GetClipboardText() {
 }
 
 void SetClipboardText(const std::string& text) {
-    const size_t len = text.length() + 1;
+    // Convert UTF-8 std::string to UTF-16 (wchar_t*)
+    QString qstr = QString::fromUtf8(text.c_str());
+    std::wstring wtext = qstr.toStdWString();
+
+    const size_t len = (wtext.length() + 1) * sizeof(wchar_t);
     HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
-    memcpy(GlobalLock(hMem), text.c_str(), len);
+    if (!hMem) return;
+
+    memcpy(GlobalLock(hMem), wtext.c_str(), len);
     GlobalUnlock(hMem);
-    OpenClipboard(0);
-    EmptyClipboard();
-    SetClipboardData(CF_TEXT, hMem);
-    CloseClipboard();
+
+    if (OpenClipboard(nullptr)) {
+        EmptyClipboard();
+        SetClipboardData(CF_UNICODETEXT, hMem);
+        CloseClipboard();
+    }
 }
 
 std::vector<std::string> SplitInput(const std::string& input, char delimiter) {
@@ -153,7 +163,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    g_mainWindow = this;    
+    g_mainWindow = this;
 
     ui->addNewLine->raise();
 
